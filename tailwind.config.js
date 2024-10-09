@@ -52,7 +52,7 @@ export default {
         },
       },
       width: {
-        container: "960px",
+        container: "1280px",
       },
     },
   },

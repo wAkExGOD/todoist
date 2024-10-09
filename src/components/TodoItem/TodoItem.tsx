@@ -8,7 +8,7 @@ import styles from "./TodoItem.module.css"
 
 type TodoItemProps = {
   data: Task
-  onStatusToggle: (id: Task["id"], isDone: boolean) => void
+  onToggleStatus: (id: Task["id"], isDone: boolean) => void
   onDelete: (id: Task["id"]) => void
 }
 
@@ -17,17 +17,10 @@ export class TodoItem extends Component<TodoItemProps> {
     super(props)
   }
 
-  handleToggleStatus = (isDone: boolean) => {
-    const { onStatusToggle, data } = this.props
+  handleToggleStatus = (isDone: boolean) =>
+    this.props.onToggleStatus(this.props.data.id, isDone)
 
-    onStatusToggle(data.id, isDone)
-  }
-
-  handleDelete = () => {
-    const { onDelete, data } = this.props
-
-    onDelete(data.id)
-  }
+  handleDelete = () => this.props.onDelete(this.props.data.id)
 
   render() {
     const { handleToggleStatus, handleDelete } = this

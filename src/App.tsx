@@ -1,12 +1,13 @@
 import { Component, createRef, RefObject } from "react"
-import { Label, Separator, Switch } from "@/components/ui"
-import { CreateTodoForm, TodoItem } from "@/components"
+import { Separator } from "@/components/ui"
+import { CreateTodoForm, Filters, TodoList } from "@/components"
 import { storage } from "@/helpers"
-import type { Task } from "@/types"
+import { type Task } from "@/types"
+import styles from "./App.module.css"
 
 type TodoListState = {
   tasks: Task[]
-  hideCompletedTasks: boolean
+  filteredTasks: Task[]
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
@@ -18,7 +19,7 @@ export class App extends Component<{}, TodoListState> {
     this.titleInput = createRef()
     this.state = {
       tasks: [],
-      hideCompletedTasks: false,
+      filteredTasks: [],
     }
   }
 
@@ -30,6 +31,13 @@ export class App extends Component<{}, TodoListState> {
     this.titleInput.current?.focus()
   }
 
+  handleDelete = (id: Task["id"]) => {
+    this.setState((state) => ({
+      ...state,
+      tasks: state.tasks.filter((task) => task.id !== id),
+    }))
+  }
+
   handleToggleStatus = (id: Task["id"], isDone: boolean) => {
     this.setState((state) => ({
       tasks: state.tasks.map((task) =>
@@ -38,29 +46,10 @@ export class App extends Component<{}, TodoListState> {
     }))
   }
 
-  handleDelete = (id: Task["id"]) => {
-    this.setState((state) => ({
-      ...state,
-      tasks: state.tasks.filter((task) => task.id !== id),
-    }))
-  }
-
-  handleToggleFilter = (isChecked: boolean) => {
+  handleFilterTasks = (tasks: Task[]) => {
     this.setState({
-      hideCompletedTasks: isChecked,
+      filteredTasks: tasks,
     })
-  }
-
-  getFilteredTasks = () => {
-    const { tasks, hideCompletedTasks } = this.state
-
-    return hideCompletedTasks
-      ? tasks
-          .sort((t1, t2) => t2.createdAtTimestamp - t1.createdAtTimestamp)
-          .filter((task) => task.isDone === false)
-      : tasks
-          .sort((t1, t2) => t2.createdAtTimestamp - t1.createdAtTimestamp)
-          .sort((t1, t2) => Number(t1.isDone) - Number(t2.isDone))
   }
 
   componentDidMount() {
@@ -77,6 +66,7 @@ export class App extends Component<{}, TodoListState> {
 
     this.setState({
       tasks: savedTasks,
+      filteredTasks: savedTasks,
     })
 
     this.titleInput.current?.focus()
@@ -90,14 +80,11 @@ export class App extends Component<{}, TodoListState> {
     const {
       titleInput,
       handleCreateTaskSubmit,
-      handleToggleStatus,
       handleDelete,
-      handleToggleFilter,
-      getFilteredTasks,
+      handleToggleStatus,
+      handleFilterTasks,
     } = this
-    const { tasks, hideCompletedTasks } = this.state
-
-    const filteredTasks = getFilteredTasks()
+    const { tasks, filteredTasks } = this.state
 
     return (
       <div className="flex flex-col p-6 gap-8 w-container max-w-full mx-auto">
@@ -109,35 +96,19 @@ export class App extends Component<{}, TodoListState> {
         />
         <Separator />
 
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="only-uncompleted-tasks"
-              checked={hideCompletedTasks}
-              onCheckedChange={handleToggleFilter}
+        <div className={styles.wrapper}>
+          <Filters
+            searchClassName={styles.search}
+            filtersClassName={styles.filters}
+            onFilter={handleFilterTasks}
+            tasks={tasks}
+          />
+          <div className={styles.todos}>
+            <TodoList
+              tasks={filteredTasks}
+              onToggleStatus={handleToggleStatus}
+              onDelete={handleDelete}
             />
-            <Label htmlFor="only-uncompleted-tasks" className="cursor-pointer">
-              Hide completed tasks
-            </Label>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            {!filteredTasks.length ? (
-              <p className="text-center text-secondary">
-                {!tasks.length
-                  ? "You don't have any tasks at the moment"
-                  : "You don't have any tasks with this filter"}
-              </p>
-            ) : (
-              filteredTasks.map((task) => (
-                <TodoItem
-                  key={task.id}
-                  data={task}
-                  onStatusToggle={handleToggleStatus}
-                  onDelete={handleDelete}
-                />
-              ))
-            )}
           </div>
         </div>
       </div>

@@ -1,0 +1,19 @@
+.wrapper {
+  display: grid;
+	gap: 1rem;
+  grid-template-areas:
+    "filters search"
+    "filters todos";
+}
+
+.filters {
+  grid-area: filters;
+}
+
+.search {
+  grid-area: search;
+}
+
+.todos {
+  grid-area: todos;
+}
