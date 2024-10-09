@@ -1,0 +1,46 @@
+.container {
+  transition: 0.3s all ease-in-out;
+
+  &:hover {
+    @media not (pointer: coarse) {
+      .deleteButton {
+        transform: translateX(0);
+        opacity: 1;
+      }
+
+      .date {
+        display: none;
+      }
+    }
+  }
+}
+
+.date {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.deleteButton {
+  transform: translateX(100%);
+  opacity: 0;
+  transition: 0.1s all ease-in-out;
+  will-change: transform;
+}
+
+@media (pointer: coarse), (max-width: 768px) {
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .date {
+    position: static;
+  }
+
+  .deleteButton {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
