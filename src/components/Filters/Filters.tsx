@@ -3,36 +3,18 @@ import { SEVERITIES, Severity, SEVERITY_LABELS, Task } from "@/types"
 import { cn } from "@/lib/utils"
 import { Input, Label, RadioGroup, RadioGroupItem, Switch } from "../ui"
 import { debounce } from "@/helpers"
+import { FilterValues } from "@/App"
 
 type FiltersProps = {
   searchClassName: string
   filtersClassName: string
-  onFilter: (tasks: Task[]) => void
+  onFilter: (values: FilterValues) => void
   tasks: Task[]
 }
 
-type FiltersState = {
-  hideCompletedTasks: boolean
-  severity: Severity
-  searchValue: string
-}
+type FiltersState = FilterValues
 
 export class Filters extends Component<FiltersProps, FiltersState> {
-  private filters = {
-    hideCompletedTasks: (tasks: Task[]) =>
-      tasks
-        .sort((t1, t2) => t2.createdAtTimestamp - t1.createdAtTimestamp)
-        .filter((task) => task.isDone === false),
-    filterTasksByTitle: (tasks: Task[]) =>
-      tasks.filter((task) =>
-        this.state.searchValue
-          ? task.title.toLocaleLowerCase().includes(this.state.searchValue)
-          : tasks
-      ),
-    filterTasksBySeverity: (tasks: Task[]) =>
-      tasks.filter((task) => task.severity === this.state.severity),
-  }
-
   constructor(props: FiltersProps) {
     super(props)
     this.state = {
@@ -43,37 +25,45 @@ export class Filters extends Component<FiltersProps, FiltersState> {
   }
 
   handleToggleFilter = (isChecked: boolean) => {
+    const hideCompletedTasks = isChecked
     this.setState({
-      hideCompletedTasks: isChecked,
+      hideCompletedTasks,
     })
-    debounce(this.handleFilter, 500)
+    // debounce(this.handleFilter, 500)
+    this.handleFilter({ ...this.state, hideCompletedTasks })
   }
 
   handleSearchValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const searchValue = e.target.value
     this.setState({
-      searchValue: e.target.value,
+      searchValue: searchValue,
     })
-    debounce(this.handleFilter, 500)
+    // debounce(this.handleFilter, 500)
+    this.handleFilter({ ...this.state, searchValue })
   }
 
-  handleFilter = () => {
-    const filteredTasks = Object.values(this.filters).reduce(
-      (tasks, cur) => cur(tasks),
-      this.props.tasks
-    )
+  handleChooseSeverity = (severity: Severity) => {
+    this.setState({
+      severity,
+    })
+    this.handleFilter({ ...this.state, severity })
+  }
 
-    this.props.onFilter(filteredTasks)
+  handleFilter = (values: FilterValues) => {
+    this.props.onFilter(values)
   }
 
   render() {
     const { searchClassName, filtersClassName } = this.props
     const { hideCompletedTasks, severity, searchValue } = this.state
-    const { filters, handleSearchValueChange, handleToggleFilter } = this
-
-    console.log(filters)
+    const {
+      handleSearchValueChange,
+      handleToggleFilter,
+      handleChooseSeverity,
+    } = this
 
     return (
-      <div>
+      <>
         <div className={searchClassName}>
           <Input
             value={searchValue}
@@ -94,11 +84,14 @@ export class Filters extends Component<FiltersProps, FiltersState> {
           </div>
           <div className="grid w-full items-center gap-1.5">
             <Label>Severity</Label>
-            <RadioGroup defaultValue={severity}>
+            <RadioGroup
+              defaultValue={severity}
+              onValueChange={handleChooseSeverity}
+            >
               {Object.keys(SEVERITY_LABELS).map((labelKey) => (
                 <div key={labelKey} className="flex items-center space-x-2">
                   <RadioGroupItem value={labelKey} id={labelKey} />
-                  <Label htmlFor={labelKey}>
+                  <Label htmlFor={labelKey} className="cursor-pointer">
                     {SEVERITY_LABELS[labelKey as Severity]}
                   </Label>
                 </div>
@@ -106,7 +99,7 @@ export class Filters extends Component<FiltersProps, FiltersState> {
             </RadioGroup>
           </div>
         </div>
-      </div>
+      </>
     )
   }
 }

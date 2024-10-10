@@ -2,7 +2,7 @@ import { Component, createRef, RefObject } from "react"
 import { Separator } from "@/components/ui"
 import { CreateTodoForm, Filters, TodoList } from "@/components"
 import { storage } from "@/helpers"
-import { type Task } from "@/types"
+import { Severity, type Task } from "@/types"
 import styles from "./App.module.css"
 
 type TodoListState = {
@@ -10,9 +10,47 @@ type TodoListState = {
   filteredTasks: Task[]
 }
 
+export type FilterValues = {
+  hideCompletedTasks: boolean
+  severity: Severity
+  searchValue: string
+}
+
+export type FilterFunctions = {
+  hideCompletedTasks: (
+    tasks: Task[]
+  ) => (hideCompletedTasks: FilterValues["hideCompletedTasks"]) => Task[]
+  filterTasksByTitle: (
+    tasks: Task[]
+  ) => (searchValue: FilterValues["searchValue"]) => Task[]
+  filterTasksBySeverity: (
+    tasks: Task[]
+  ) => (severity: FilterValues["severity"]) => Task[]
+}
+
+const FILTER_FUNCTION_PARAMS = {
+  hideCompletedTasks: "hideCompletedTasks",
+  filterTasksByTitle: "searchValue",
+  filterTasksBySeverity: "severity",
+} as const
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export class App extends Component<{}, TodoListState> {
   private titleInput: RefObject<HTMLInputElement>
+  private filters: FilterFunctions = {
+    hideCompletedTasks: (tasks) => (hideCompletedTasks) =>
+      tasks
+        .sort((t1, t2) => t2.createdAtTimestamp - t1.createdAtTimestamp)
+        .filter((task) => task.isDone === hideCompletedTasks),
+    filterTasksByTitle: (tasks) => (searchValue) =>
+      searchValue
+        ? tasks.filter((task) =>
+            task.title.toLocaleLowerCase().includes(searchValue)
+          )
+        : tasks,
+    filterTasksBySeverity: (tasks) => (severity) =>
+      tasks.filter((task) => task.severity === severity),
+  }
   // @ts-expect-error props is always {}
   constructor(props) {
     super(props)
@@ -39,16 +77,31 @@ export class App extends Component<{}, TodoListState> {
   }
 
   handleToggleStatus = (id: Task["id"], isDone: boolean) => {
-    this.setState((state) => ({
-      tasks: state.tasks.map((task) =>
-        task.id === id ? { ...task, isDone } : task
-      ),
-    }))
+    const newTasks = this.state.tasks.map((task) =>
+      task.id === id ? { ...task, isDone } : task
+    )
+    const newFilteredTasks = this.state.filteredTasks.map((task) =>
+      task.id === id ? { ...task, isDone } : task
+    )
+    this.setState({
+      tasks: newTasks,
+      filteredTasks: newFilteredTasks,
+    })
   }
 
-  handleFilterTasks = (tasks: Task[]) => {
+  handleFilterTasks = (values: FilterValues) => {
+    const filteredTasks = Object.entries(this.filters).reduce((tasks, cur) => {
+      const filterFunction = cur[1](tasks)
+
+      const filterBy = values[FILTER_FUNCTION_PARAMS[cur[0]]]
+      console.log(filterFunction, filterBy)
+
+      return filterFunction(filterBy)
+    }, this.state.tasks)
+    console.log(this.state.tasks, filteredTasks)
+
     this.setState({
-      filteredTasks: tasks,
+      filteredTasks,
     })
   }
 
