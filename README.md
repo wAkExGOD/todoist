@@ -1,6 +1,6 @@
 # Todo List
 
-![image](https://github.com/user-attachments/assets/a26785d3-f9c7-4473-b4da-987cfdbf30e6)
+![image](https://github.com/user-attachments/assets/bd34861a-3419-4a2a-b285-ea0725edbf9e)
 
 ## Описание проекта
 
