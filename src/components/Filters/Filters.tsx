@@ -1,15 +1,22 @@
 import { Component } from "react"
-import { SEVERITIES, Severity, SEVERITY_LABELS, Task } from "@/types"
+import { Severity, SEVERITY_LABELS } from "@/types"
 import { cn } from "@/lib/utils"
-import { Input, Label, RadioGroup, RadioGroupItem, Switch } from "../ui"
+import { Checkbox, Input, Label, Switch } from "../ui"
 import { debounce } from "@/helpers"
-import { FilterValues } from "@/App"
+import {
+  FilterValues,
+  HandleSetHideCompletedTasks,
+  HandleSetSearchValue,
+  HandleSetSeverities,
+} from "@/App"
 
 type FiltersProps = {
   searchClassName: string
   filtersClassName: string
-  onFilter: (values: FilterValues) => void
-  tasks: Task[]
+  filterValues: FilterValues
+  handleSetHideCompletedTasks: HandleSetHideCompletedTasks
+  handleSetSeverities: HandleSetSeverities
+  handleSetSearchValue: HandleSetSearchValue
 }
 
 type FiltersState = FilterValues
@@ -18,48 +25,57 @@ export class Filters extends Component<FiltersProps, FiltersState> {
   constructor(props: FiltersProps) {
     super(props)
     this.state = {
-      hideCompletedTasks: false,
-      severity: SEVERITIES.default,
-      searchValue: "",
+      searchValue: this.props.filterValues.searchValue,
+      severities: this.props.filterValues.severities,
+      hideCompletedTasks: this.props.filterValues.hideCompletedTasks,
     }
   }
 
-  handleToggleFilter = (isChecked: boolean) => {
-    const hideCompletedTasks = isChecked
+  handleToggleHideStatus = (hideCompletedTasks: boolean) => {
     this.setState({
       hideCompletedTasks,
     })
-    // debounce(this.handleFilter, 500)
-    this.handleFilter({ ...this.state, hideCompletedTasks })
+
+    this.debouncedToggleHideStatus()
+  }
+
+  handleChangeSeverity = (severity: Severity, checked: boolean) => {
+    this.setState((state) => ({
+      ...state,
+      severities: {
+        ...state.severities,
+        [severity]: checked,
+      },
+    }))
+
+    this.debouncedChangeSeverities()
   }
 
   handleSearchValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const searchValue = e.target.value
     this.setState({
-      searchValue: searchValue,
+      searchValue: e.target.value,
     })
-    // debounce(this.handleFilter, 500)
-    this.handleFilter({ ...this.state, searchValue })
+
+    this.debouncedSearch()
   }
 
-  handleChooseSeverity = (severity: Severity) => {
-    this.setState({
-      severity,
-    })
-    this.handleFilter({ ...this.state, severity })
-  }
-
-  handleFilter = (values: FilterValues) => {
-    this.props.onFilter(values)
-  }
+  debouncedSearch = debounce(() => {
+    this.props.handleSetSearchValue(this.state.searchValue)
+  }, 500)
+  debouncedChangeSeverities = debounce(() => {
+    this.props.handleSetSeverities(this.state.severities)
+  }, 500)
+  debouncedToggleHideStatus = debounce(() => {
+    this.props.handleSetHideCompletedTasks(this.state.hideCompletedTasks)
+  }, 500)
 
   render() {
     const { searchClassName, filtersClassName } = this.props
-    const { hideCompletedTasks, severity, searchValue } = this.state
+    const { searchValue, severities, hideCompletedTasks } = this.state
     const {
       handleSearchValueChange,
-      handleToggleFilter,
-      handleChooseSeverity,
+      handleToggleHideStatus,
+      handleChangeSeverity,
     } = this
 
     return (
@@ -72,31 +88,40 @@ export class Filters extends Component<FiltersProps, FiltersState> {
           />
         </div>
         <div className={cn(filtersClassName, "flex flex-col gap-4")}>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 p-3 rounded-md border">
             <Switch
               id="only-uncompleted-tasks"
               checked={hideCompletedTasks}
-              onCheckedChange={handleToggleFilter}
+              onCheckedChange={handleToggleHideStatus}
             />
             <Label htmlFor="only-uncompleted-tasks" className="cursor-pointer">
               Hide completed tasks
             </Label>
           </div>
-          <div className="grid w-full items-center gap-1.5">
+          <div className="grid w-full items-center gap-3 p-3 rounded-md border">
             <Label>Severity</Label>
-            <RadioGroup
-              defaultValue={severity}
-              onValueChange={handleChooseSeverity}
-            >
+            <div className="flex flex-col gap-2">
               {Object.keys(SEVERITY_LABELS).map((labelKey) => (
-                <div key={labelKey} className="flex items-center space-x-2">
-                  <RadioGroupItem value={labelKey} id={labelKey} />
-                  <Label htmlFor={labelKey} className="cursor-pointer">
+                <div className="flex items-center space-x-2" key={labelKey}>
+                  <Checkbox
+                    id={labelKey}
+                    checked={severities[labelKey as Severity]}
+                    onCheckedChange={(checked) => {
+                      const status =
+                        checked === "indeterminate" ? false : checked
+
+                      handleChangeSeverity(labelKey as Severity, status)
+                    }}
+                  />
+                  <label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
                     {SEVERITY_LABELS[labelKey as Severity]}
-                  </Label>
+                  </label>
                 </div>
               ))}
-            </RadioGroup>
+            </div>
           </div>
         </div>
       </>

@@ -1,13 +1,13 @@
 export const SEVERITIES = {
-  immediately: "immediately",
-  default: "default",
-  notImmediately: "notImmediately",
+  low: "low",
+  mid: "mid",
+  high: "high",
 } as const
 
 export const SEVERITY_LABELS = {
-  [SEVERITIES.default]: "Default",
-  [SEVERITIES.immediately]: "Immediately",
-  [SEVERITIES.notImmediately]: "Not immediately",
+  [SEVERITIES.low]: "Low",
+  [SEVERITIES.mid]: "Mid",
+  [SEVERITIES.high]: "High",
 } as const
 
 export type Severity = keyof typeof SEVERITIES

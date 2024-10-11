@@ -1,5 +1,5 @@
 import { Component } from "react"
-import { type Task } from "@/types"
+import { SEVERITY_LABELS, type Task } from "@/types"
 import { cn } from "@/lib/utils"
 import { timeAgo } from "@/helpers"
 import { Button, Checkbox } from "@/components/ui"
@@ -22,9 +22,21 @@ export class TodoItem extends Component<TodoItemProps> {
 
   handleDelete = () => this.props.onDelete(this.props.data.id)
 
+  shouldComponentUpdate(nextProps: Readonly<TodoItemProps>): boolean {
+    const hasTitleChanged = nextProps.data.title !== this.props.data.title
+    const hasDoneStatusChange = nextProps.data.isDone !== this.props.data.isDone
+
+    if (hasTitleChanged || hasDoneStatusChange) {
+      return true
+    }
+
+    return false
+  }
+
   render() {
     const { handleToggleStatus, handleDelete } = this
-    const { title, description, createdAtTimestamp, isDone } = this.props.data
+    const { title, description, createdAtTimestamp, isDone, severity } =
+      this.props.data
 
     return (
       <div className={cn(styles.container, "px-5 py-5 rounded-md border")}>
@@ -40,6 +52,11 @@ export class TodoItem extends Component<TodoItemProps> {
                 {title}
               </p>
               {description && <p className="text-emerald-600">{description}</p>}
+              {severity && (
+                <p className="text-emerald-500">
+                  Severity: {SEVERITY_LABELS[severity]}
+                </p>
+              )}
             </div>
             <div className={cn(styles.deleteButton, "ml-auto self-center")}>
               <Button variant="outline" onClick={handleDelete}>
