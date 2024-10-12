@@ -1,7 +1,7 @@
 import { Component, createRef, RefObject } from "react"
 import { Button, Separator } from "@/components/ui"
 import { CreateTodoForm, Filters, TodoList } from "@/components"
-import { compareSeverities, generateTodos, storage } from "@/helpers"
+import { generateTodos, storage } from "@/helpers"
 import { Severity, type Task } from "@/types"
 import styles from "./App.module.css"
 
@@ -101,13 +101,13 @@ export class App extends Component<{}, TodoListState> {
   }
 
   filterTasks = () => {
-    console.log(this.state.filterValues)
     this.setState({
-      filteredTasks: Object.values(this.filters).reduce(
-        (tasks, filterFunction) => filterFunction(tasks),
-        this.state.tasks
-      ),
-      // .sort((t1, t2) => t2.createdAtTimestamp - t1.createdAtTimestamp),
+      filteredTasks: Object.values(this.filters)
+        .reduce(
+          (tasks, filterFunction) => filterFunction(tasks),
+          this.state.tasks
+        )
+        .sort((t1, t2) => t2.createdAtTimestamp - t1.createdAtTimestamp),
     })
   }
 
@@ -132,7 +132,6 @@ export class App extends Component<{}, TodoListState> {
   }
 
   handleSetSearchValue: HandleSetSearchValue = (searchValue) => {
-    console.log("search", searchValue)
     this.setState({
       filterValues: {
         ...this.state.filterValues,
@@ -172,19 +171,8 @@ export class App extends Component<{}, TodoListState> {
     prevProps: Readonly<{}>,
     prevState: Readonly<TodoListState>
   ): void {
-    const {
-      hideCompletedTasks: h1,
-      severities: s1,
-      searchValue: v1,
-    } = prevState.filterValues
-    const {
-      hideCompletedTasks: h2,
-      severities: s2,
-      searchValue: v2,
-    } = this.state.filterValues
-
     const haveFiltersChanged =
-      h1 !== h2 || !compareSeverities(s1, s2) || v1 !== v2
+      prevState.filterValues !== this.state.filterValues
 
     const haveTasksChanged = prevState.tasks !== this.state.tasks
 
