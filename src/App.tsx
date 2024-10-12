@@ -1,7 +1,7 @@
 import { Component, createRef, RefObject } from "react"
 import { Button, Separator } from "@/components/ui"
 import { CreateTodoForm, Filters, TodoList } from "@/components"
-import { generateTodos, storage } from "@/helpers"
+import { generateTodos, isSubstring, storage } from "@/helpers"
 import { Severity, type Task } from "@/types"
 import styles from "./App.module.css"
 
@@ -36,11 +36,15 @@ export class App extends Component<{}, TodoListState> {
   private filters: FilterFunctions = {
     filterTasksByTitle: (tasks) =>
       this.state.filterValues.searchValue
-        ? tasks.filter((task) =>
-            task.title
-              .toLocaleLowerCase()
-              .includes(this.state.filterValues.searchValue)
-          )
+        ? tasks.filter((task) => {
+            const { searchValue } = this.state.filterValues
+            const { title, description } = task
+
+            return (
+              isSubstring(title, searchValue) ||
+              isSubstring(description, searchValue)
+            )
+          })
         : tasks,
     filterTasksBySeverity: (tasks) =>
       Object.values(this.state.filterValues.severities).some((s) => s !== false)
@@ -141,9 +145,9 @@ export class App extends Component<{}, TodoListState> {
   }
 
   handleGenerateTodos = () => {
-    this.setState({
-      tasks: generateTodos(),
-    })
+    this.setState((state) => ({
+      tasks: [...state.tasks, ...generateTodos()],
+    }))
   }
 
   componentDidMount() {

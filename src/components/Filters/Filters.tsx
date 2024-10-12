@@ -36,15 +36,27 @@ export class Filters extends Component<FiltersProps, FiltersState> {
       hideCompletedTasks,
     })
 
-    this.debouncedToggleHideStatus()
+    this.props.handleSetHideCompletedTasks(hideCompletedTasks)
   }
 
-  handleChangeSeverity = (severity: Severity, checked: boolean) => {
+  // handleChangeSeverity = (severity: Severity, checked: boolean) => {
+  //   this.setState((state) => ({
+  //     ...state,
+  //     severities: {
+  //       ...state.severities,
+  //       [severity]: checked,
+  //     },
+  //   }))
+
+  //   this.debouncedChangeSeverities()
+  // }
+
+  handleChangeSeverity = (severity: Severity) => {
     this.setState((state) => ({
       ...state,
       severities: {
         ...state.severities,
-        [severity]: checked,
+        [severity]: !state.severities[severity],
       },
     }))
 
@@ -64,9 +76,6 @@ export class Filters extends Component<FiltersProps, FiltersState> {
   }, 500)
   debouncedChangeSeverities = debounce(() => {
     this.props.handleSetSeverities(this.state.severities)
-  }, 500)
-  debouncedToggleHideStatus = debounce(() => {
-    this.props.handleSetHideCompletedTasks(this.state.hideCompletedTasks)
   }, 500)
 
   render() {
@@ -102,20 +111,19 @@ export class Filters extends Component<FiltersProps, FiltersState> {
             <Label>Severity</Label>
             <div className="flex flex-col gap-2">
               {Object.keys(SEVERITY_LABELS).map((labelKey) => (
-                <div className="flex items-center space-x-2" key={labelKey}>
+                <div
+                  key={labelKey}
+                  className="flex items-center space-x-2"
+                  onClick={() => handleChangeSeverity(labelKey as Severity)}
+                >
                   <Checkbox
                     id={labelKey}
                     checked={severities[labelKey as Severity]}
-                    onCheckedChange={(checked) => {
-                      const status =
-                        checked === "indeterminate" ? false : checked
-
-                      handleChangeSeverity(labelKey as Severity, status)
-                    }}
+                    className="w-6 h-6"
                   />
                   <label
                     htmlFor="terms"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                   >
                     {SEVERITY_LABELS[labelKey as Severity]}
                   </label>

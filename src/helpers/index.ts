@@ -1,5 +1,6 @@
 export * from "./debounce"
 export * from "./generateTodos"
-export * from "./timeAgo"
 export * from "./getUniqueTodoId"
+export * from "./isSubstring"
 export * from "./storage"
+export * from "./timeAgo"
