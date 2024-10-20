@@ -12,12 +12,12 @@ type TodoListState = {
 }
 
 export type Severities = {
-  [key in Severity]: boolean
+  [key in Severity]?: boolean
 }
 export type FilterValues = {
   hideCompletedTasks: boolean
   severities: Severities
-  searchValue: string
+  searchValue?: string
 }
 
 export type FilterFunctions = {
@@ -26,26 +26,25 @@ export type FilterFunctions = {
   filterTasksBySeverity: (tasks: Task[]) => Task[]
 }
 
-export type HandleSetHideCompletedTasks = (hideCompletedTasks: boolean) => void
-export type HandleSetSeverities = (severities: Severities) => void
-export type HandleSetSearchValue = (searchValue: string) => void
-
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export class App extends Component<{}, TodoListState> {
   private titleInput: RefObject<HTMLInputElement>
   private filters: FilterFunctions = {
-    filterTasksByTitle: (tasks) =>
-      this.state.filterValues.searchValue
-        ? tasks.filter((task) => {
-            const { searchValue } = this.state.filterValues
-            const { title, description } = task
+    filterTasksByTitle: (tasks) => {
+      const { searchValue } = this.state.filterValues
+      if (!searchValue) {
+        return tasks
+      }
 
-            return (
-              isSubstring(title, searchValue) ||
-              isSubstring(description, searchValue)
-            )
-          })
-        : tasks,
+      return tasks.filter((task) => {
+        const { title, description } = task
+
+        return (
+          isSubstring(title, searchValue) ||
+          isSubstring(description, searchValue)
+        )
+      })
+    },
     filterTasksBySeverity: (tasks) =>
       Object.values(this.state.filterValues.severities).some((s) => s !== false)
         ? tasks.filter(
@@ -115,32 +114,9 @@ export class App extends Component<{}, TodoListState> {
     })
   }
 
-  handleSetHideCompletedTasks: HandleSetHideCompletedTasks = (
-    hideCompletedTasks
-  ) => {
+  handleFiltersChange = (filters: FilterValues) => {
     this.setState({
-      filterValues: {
-        ...this.state.filterValues,
-        hideCompletedTasks,
-      },
-    })
-  }
-
-  handleSetSeverities: HandleSetSeverities = (severities) => {
-    this.setState({
-      filterValues: {
-        ...this.state.filterValues,
-        severities,
-      },
-    })
-  }
-
-  handleSetSearchValue: HandleSetSearchValue = (searchValue) => {
-    this.setState({
-      filterValues: {
-        ...this.state.filterValues,
-        searchValue,
-      },
+      filterValues: filters,
     })
   }
 
@@ -194,9 +170,7 @@ export class App extends Component<{}, TodoListState> {
       handleDelete,
       handleToggleStatus,
       handleGenerateTodos,
-      handleSetHideCompletedTasks,
-      handleSetSearchValue,
-      handleSetSeverities,
+      handleFiltersChange,
     } = this
     const { filterValues, filteredTasks, tasks } = this.state
     const { hideCompletedTasks, searchValue, severities } = filterValues
@@ -221,9 +195,7 @@ export class App extends Component<{}, TodoListState> {
             searchClassName={styles.search}
             filtersClassName={styles.filters}
             filterValues={{ hideCompletedTasks, searchValue, severities }}
-            handleSetHideCompletedTasks={handleSetHideCompletedTasks}
-            handleSetSeverities={handleSetSeverities}
-            handleSetSearchValue={handleSetSearchValue}
+            onFiltersChange={handleFiltersChange}
           />
           <div className={styles.todos}>
             {!filteredTasks.length && (

@@ -3,23 +3,19 @@ import { Severity, SEVERITY_LABELS } from "@/types"
 import { cn } from "@/lib/utils"
 import { Checkbox, Input, Label, Switch } from "../ui"
 import { debounce } from "@/helpers"
-import {
-  FilterValues,
-  HandleSetHideCompletedTasks,
-  HandleSetSearchValue,
-  HandleSetSeverities,
-} from "@/App"
+import { FilterValues } from "@/App"
 
 type FiltersProps = {
   searchClassName: string
   filtersClassName: string
   filterValues: FilterValues
-  handleSetHideCompletedTasks: HandleSetHideCompletedTasks
-  handleSetSeverities: HandleSetSeverities
-  handleSetSearchValue: HandleSetSearchValue
+  onFiltersChange: (filters: FilterValues) => void
 }
 
-type FiltersState = FilterValues
+type FiltersState = FilterValues & {
+  debouncedSearchValue: FilterValues["searchValue"]
+  debouncedSeverities: FilterValues["severities"]
+}
 
 export class Filters extends Component<FiltersProps, FiltersState> {
   constructor(props: FiltersProps) {
@@ -28,6 +24,8 @@ export class Filters extends Component<FiltersProps, FiltersState> {
       searchValue: this.props.filterValues.searchValue,
       severities: this.props.filterValues.severities,
       hideCompletedTasks: this.props.filterValues.hideCompletedTasks,
+      debouncedSearchValue: "",
+      debouncedSeverities: {},
     }
   }
 
@@ -35,21 +33,7 @@ export class Filters extends Component<FiltersProps, FiltersState> {
     this.setState({
       hideCompletedTasks,
     })
-
-    this.props.handleSetHideCompletedTasks(hideCompletedTasks)
   }
-
-  // handleChangeSeverity = (severity: Severity, checked: boolean) => {
-  //   this.setState((state) => ({
-  //     ...state,
-  //     severities: {
-  //       ...state.severities,
-  //       [severity]: checked,
-  //     },
-  //   }))
-
-  //   this.debouncedChangeSeverities()
-  // }
 
   handleChangeSeverity = (severity: Severity) => {
     this.setState((state) => ({
@@ -72,11 +56,32 @@ export class Filters extends Component<FiltersProps, FiltersState> {
   }
 
   debouncedSearch = debounce(() => {
-    this.props.handleSetSearchValue(this.state.searchValue)
+    this.setState({ debouncedSearchValue: this.state.searchValue })
   }, 500)
+
   debouncedChangeSeverities = debounce(() => {
-    this.props.handleSetSeverities(this.state.severities)
+    this.setState({ debouncedSeverities: this.state.severities })
   }, 500)
+
+  componentDidUpdate(
+    prevProps: Readonly<FiltersProps>,
+    prevState: Readonly<FiltersState>
+  ): void {
+    if (prevState == this.state) {
+      return
+    }
+
+    if (prevState.searchValue !== this.state.searchValue) {
+      return
+    }
+
+    if (prevState.severities !== this.state.severities) {
+      return
+    }
+
+    const { searchValue, severities, hideCompletedTasks } = this.state
+    this.props.onFiltersChange({ searchValue, severities, hideCompletedTasks })
+  }
 
   render() {
     const { searchClassName, filtersClassName } = this.props
