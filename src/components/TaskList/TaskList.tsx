@@ -1,16 +1,16 @@
 import { Component } from "react"
-import { TodoItem } from "../TodoItem/TodoItem"
+import { TaskItem } from "../TaskItem/TaskItem"
 import { Task } from "@/types"
 
-type TodoListProps = {
+type TaskListProps = {
   tasks: Task[]
   onToggleStatus: (id: Task["id"], isDone: boolean) => void
   onDelete: (id: Task["id"]) => void
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export class TodoList extends Component<TodoListProps, {}> {
-  constructor(props: TodoListProps) {
+export class TaskList extends Component<TaskListProps, {}> {
+  constructor(props: TaskListProps) {
     super(props)
   }
 
@@ -19,15 +19,8 @@ export class TodoList extends Component<TodoListProps, {}> {
 
     return (
       <div className="flex flex-col gap-2">
-        {/* {!tasks.length ? (
-            <p className="text-center text-secondary">
-              {!tasks.length
-                ? "You don't have any tasks at the moment"
-                : "You don't have any tasks with this filter"}
-            </p>
-          ) : ( */}
         {tasks.map((task) => (
-          <TodoItem
+          <TaskItem
             key={task.id}
             data={task}
             onToggleStatus={onToggleStatus}

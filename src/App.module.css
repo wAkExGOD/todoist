@@ -4,14 +4,14 @@
   grid-template-columns: auto 1fr;
   grid-template-areas:
     "filters search"
-    "filters todos";
+    "filters tasks";
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     grid-template-areas:
       "search"
       "filters"
-      "todos";
+      "tasks";
   }
 }
 
@@ -23,6 +23,6 @@
   grid-area: search;
 }
 
-.todos {
-  grid-area: todos;
+.tasks {
+  grid-area: tasks;
 }

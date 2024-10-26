@@ -80,6 +80,7 @@ export class Filters extends Component<FiltersProps, FiltersState> {
     }
 
     const { searchValue, severities, hideCompletedTasks } = this.state
+
     this.props.onFiltersChange({ searchValue, severities, hideCompletedTasks })
   }
 
@@ -98,7 +99,7 @@ export class Filters extends Component<FiltersProps, FiltersState> {
           <Input
             value={searchValue}
             onChange={handleSearchValueChange}
-            placeholder="Search todo"
+            placeholder="Search task"
           />
         </div>
         <div className={cn(filtersClassName, "flex flex-col gap-4")}>

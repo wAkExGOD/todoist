@@ -3,7 +3,7 @@ import { Task } from "@/types"
 const LOCAL_STORAGE_TASKS_KEY = "tasks"
 
 export const storage = {
-  syncTasks: (tasks: Task[]): void => {
+  setTasks: (tasks: Task[]): void => {
     if (!window.localStorage) {
       return
     }

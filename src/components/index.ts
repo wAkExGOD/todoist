@@ -1,4 +1,4 @@
-export * from "./CreateTodoForm/CreateTodoForm"
+export * from "./CreateTaskForm/CreateTaskForm"
 export * from "./Filters/Filters"
-export * from "./TodoItem/TodoItem"
-export * from "./TodoList/TodoList"
+export * from "./TaskItem/TaskItem"
+export * from "./TaskList/TaskList"

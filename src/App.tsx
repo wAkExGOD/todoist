@@ -1,11 +1,11 @@
 import { Component, createRef, RefObject } from "react"
 import { Button, Separator } from "@/components/ui"
-import { CreateTodoForm, Filters, TodoList } from "@/components"
-import { generateTodos, isSubstring, storage } from "@/helpers"
+import { CreateTaskForm, Filters, TaskList } from "@/components"
+import { generateTasks, isSubstring, storage } from "@/helpers"
 import { Severity, type Task } from "@/types"
 import styles from "./App.module.css"
 
-type TodoListState = {
+type TaskListState = {
   tasks: Task[]
   filteredTasks: Task[]
   filterValues: FilterValues
@@ -27,7 +27,7 @@ export type FilterFunctions = {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export class App extends Component<{}, TodoListState> {
+export class App extends Component<{}, TaskListState> {
   private titleInput: RefObject<HTMLInputElement>
   private filters: FilterFunctions = {
     filterTasksByTitle: (tasks) => {
@@ -75,7 +75,7 @@ export class App extends Component<{}, TodoListState> {
     }
   }
 
-  handleCreateTaskSubmit = (task: Task) => {
+  handleCreate = (task: Task) => {
     this.setState((state) => ({
       tasks: [...state.tasks, task],
     }))
@@ -120,9 +120,9 @@ export class App extends Component<{}, TodoListState> {
     })
   }
 
-  handleGenerateTodos = () => {
+  handleGenerateTasks = () => {
     this.setState((state) => ({
-      tasks: [...state.tasks, ...generateTodos()],
+      tasks: [...state.tasks, ...generateTasks()],
     }))
   }
 
@@ -149,7 +149,7 @@ export class App extends Component<{}, TodoListState> {
   componentDidUpdate(
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     prevProps: Readonly<{}>,
-    prevState: Readonly<TodoListState>
+    prevState: Readonly<TaskListState>
   ): void {
     const haveFiltersChanged =
       prevState.filterValues !== this.state.filterValues
@@ -160,16 +160,16 @@ export class App extends Component<{}, TodoListState> {
       this.filterTasks()
     }
 
-    storage.syncTasks(this.state.tasks)
+    storage.setTasks(this.state.tasks)
   }
 
   render() {
     const {
       titleInput,
-      handleCreateTaskSubmit,
+      handleCreate,
       handleDelete,
       handleToggleStatus,
-      handleGenerateTodos,
+      handleGenerateTasks,
       handleFiltersChange,
     } = this
     const { filterValues, filteredTasks, tasks } = this.state
@@ -179,14 +179,11 @@ export class App extends Component<{}, TodoListState> {
       <div className="flex flex-col p-6 gap-8 w-container max-w-full mx-auto">
         <h1 className="text-3xl font-bold text-center">Todo List</h1>
 
-        <CreateTodoForm
-          onSubmit={handleCreateTaskSubmit}
-          inputRef={titleInput}
-        />
+        <CreateTaskForm onSubmit={handleCreate} inputRef={titleInput} />
         <Separator />
         <div className="flex justify-end">
-          <Button variant="outline" onClick={handleGenerateTodos}>
-            Generate todos
+          <Button variant="outline" onClick={handleGenerateTasks}>
+            Generate tasks
           </Button>
         </div>
 
@@ -197,7 +194,7 @@ export class App extends Component<{}, TodoListState> {
             filterValues={{ hideCompletedTasks, searchValue, severities }}
             onFiltersChange={handleFiltersChange}
           />
-          <div className={styles.todos}>
+          <div className={styles.tasks}>
             {!filteredTasks.length && (
               <p className="text-center text-secondary">
                 {tasks.length
@@ -205,7 +202,7 @@ export class App extends Component<{}, TodoListState> {
                   : `You don't have any tasks at the moment`}
               </p>
             )}
-            <TodoList
+            <TaskList
               tasks={filteredTasks}
               onToggleStatus={handleToggleStatus}
               onDelete={handleDelete}

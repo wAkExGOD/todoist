@@ -1,36 +1,36 @@
 import { Component, RefObject } from "react"
 import { Textarea, Button, Input, Label } from "@/components/ui"
 import { PlusCircledIcon } from "@radix-ui/react-icons"
-import { getUniqueTodoId } from "@/helpers"
+import { getUniqueTaskId } from "@/helpers"
 import { SEVERITIES, Severity, SEVERITY_LABELS, type Task } from "@/types"
 
 const MIN_TITLE_LENGTH = 3
 const MAX_TITLE_LENGTH = 80
 
-type CreateTodoFormProps = {
+type CreateTaskFormProps = {
   inputRef: RefObject<HTMLInputElement>
   onSubmit: (task: Task) => void
 }
 
-type CreateTodoFormState = Pick<Task, "title" | "description" | "severity"> & {
+type CreateTaskFormState = Pick<Task, "title" | "description" | "severity"> & {
   error: string
 }
 
-export class CreateTodoForm extends Component<
-  CreateTodoFormProps,
-  CreateTodoFormState
+export class CreateTaskForm extends Component<
+  CreateTaskFormProps,
+  CreateTaskFormState
 > {
-  constructor(props: CreateTodoFormProps) {
+  constructor(props: CreateTaskFormProps) {
     super(props)
     this.state = {
       title: "",
       description: "",
-      severity: SEVERITIES.default,
+      severity: SEVERITIES.mid,
       error: "",
     }
   }
 
-  handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     const { title, description, severity } = this.state
@@ -48,7 +48,7 @@ export class CreateTodoForm extends Component<
     }
 
     this.props.onSubmit({
-      id: getUniqueTodoId(),
+      id: getUniqueTaskId(),
       createdAtTimestamp: Math.floor(Date.now() / 1000),
       title,
       description,
@@ -76,13 +76,17 @@ export class CreateTodoForm extends Component<
   }
 
   render() {
-    const { handleTitleChange, handleDescriptionChange, handleSeverityChange } =
-      this
+    const {
+      handleSubmit,
+      handleTitleChange,
+      handleDescriptionChange,
+      handleSeverityChange,
+    } = this
     const { title, description, severity, error } = this.state
     const { inputRef } = this.props
 
     return (
-      <form className="flex flex-col gap-3" onSubmit={this.handleFormSubmit}>
+      <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
         <div className="grid w-full items-center gap-1.5">
           <Label htmlFor="title">Title</Label>
           <Input

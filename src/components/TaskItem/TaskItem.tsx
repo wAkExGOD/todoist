@@ -4,16 +4,16 @@ import { cn } from "@/lib/utils"
 import { timeAgo } from "@/helpers"
 import { Button, Checkbox } from "@/components/ui"
 import { TrashIcon } from "@radix-ui/react-icons"
-import styles from "./TodoItem.module.css"
+import styles from "./TaskItem.module.css"
 
-type TodoItemProps = {
+type TaskItemProps = {
   data: Task
   onToggleStatus: (id: Task["id"], isDone: boolean) => void
   onDelete: (id: Task["id"]) => void
 }
 
-export class TodoItem extends Component<TodoItemProps> {
-  constructor(props: TodoItemProps) {
+export class TaskItem extends Component<TaskItemProps> {
+  constructor(props: TaskItemProps) {
     super(props)
   }
 
@@ -22,7 +22,7 @@ export class TodoItem extends Component<TodoItemProps> {
 
   handleDelete = () => this.props.onDelete(this.props.data.id)
 
-  shouldComponentUpdate(nextProps: Readonly<TodoItemProps>): boolean {
+  shouldComponentUpdate(nextProps: Readonly<TaskItemProps>): boolean {
     const hasTitleChanged = nextProps.data.title !== this.props.data.title
     const hasDoneStatusChange = nextProps.data.isDone !== this.props.data.isDone
 
